@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(downloadReceiver,new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
         binding.button.setOnClickListener(v -> {
+            binding.LayoutError.setVisibility(View.GONE);
             url = binding.editText.getText().toString().trim();
             if (url.isEmpty()||url == null){
                 Toast.makeText(this, "Please enter valid url", Toast.LENGTH_SHORT).show();
@@ -85,38 +87,49 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        DownloadManager.Request request;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            request = new DownloadManager.Request(Uri.parse(downloadUrl))
-                    .setTitle(nameOfFile)
-                    .setDescription(nameOfFile)
-                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                    .setDestinationInExternalPublicDir(FOLDER_NAME, nameOfFile)
-                    .setRequiresCharging(false)
-                    .setAllowedOverMetered(true)
-                    .setAllowedOverRoaming(true);
-        }else{
-            request = new DownloadManager.Request(Uri.parse(downloadUrl))
-                    .setTitle(nameOfFile)
-                    .setDescription(nameOfFile)
-                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                    .setDestinationInExternalPublicDir(FOLDER_NAME, nameOfFile)
-                    .setAllowedOverMetered(true)
-                    .setAllowedOverRoaming(true);
+        try {
+            DownloadManager.Request request;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                request = new DownloadManager.Request(Uri.parse(downloadUrl))
+                        .setTitle(nameOfFile)
+                        .setDescription(nameOfFile)
+                        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                        .setDestinationInExternalPublicDir(FOLDER_NAME, nameOfFile)
+                        .setRequiresCharging(false)
+                        .setAllowedOverMetered(true)
+                        .setAllowedOverRoaming(true);
+            }else{
+                request = new DownloadManager.Request(Uri.parse(downloadUrl))
+                        .setTitle(nameOfFile)
+                        .setDescription(nameOfFile)
+                        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                        .setDestinationInExternalPublicDir(FOLDER_NAME, nameOfFile)
+                        .setAllowedOverMetered(true)
+                        .setAllowedOverRoaming(true);
+            }
+
+
+            Context context = this;
+            DownloadManager downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
+            downloadId = downloadManager.enqueue(request);
+        }catch (Exception e){
+            binding.textViewErrorAlart.setTextColor(getResources().getColor(R.color.red));
+            binding.textViewErrorAlart.setText("Error");
+            binding.LayoutError.setVisibility(View.VISIBLE);
+            binding.textViewError.setText(e.getMessage());
         }
-
-
-        Context context = this;
-        DownloadManager downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
-        downloadId = downloadManager.enqueue(request);
     }
 
     private BroadcastReceiver downloadReceiver = new BroadcastReceiver() {
+        @SuppressLint("SetTextI18n")
         @Override
         public void onReceive(Context context, Intent intent) {
             long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-1);
             if (downloadId == id){
-                Toast.makeText(MainActivity.this, "Download Completed to \n"+requestFilePath.getAbsolutePath(), Toast.LENGTH_LONG).show();
+                binding.textViewErrorAlart.setTextColor(getResources().getColor(R.color.green));
+                binding.textViewErrorAlart.setText("Success");
+                binding.LayoutError.setVisibility(View.VISIBLE);
+                binding.textViewError.setText("Download Completed to \n"+requestFilePath.getAbsolutePath());
             }
         }
     };
