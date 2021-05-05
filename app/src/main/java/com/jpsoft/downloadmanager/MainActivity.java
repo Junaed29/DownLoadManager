@@ -37,15 +37,12 @@ import java.net.URL;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-
     private static final String TAG = "MainActivity";
     private ActivityMainBinding binding;
     private long downloadId;
     File requestFilePath;
-
-    final String FOLDER_NAME = "/MyDarbar_Files";
-
     private String url = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,39 +63,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @SuppressLint("SetTextI18n")
     private void startDownload(String downloadUrl){
         // File Name
         String nameOfFile = URLUtil.guessFileName(downloadUrl, null,
                 MimeTypeMap.getFileExtensionFromUrl(downloadUrl));
 
-        // File Path
-        //File direct = new File(Environment.getExternalStorageDirectory()+ FOLDER_NAME);
-
         File file = new File(getExternalFilesDir("QuranAudio"),nameOfFile);
 
-        File direct = new File(Environment.DIRECTORY_MUSIC + FOLDER_NAME);
-
-        if (!direct.exists()) {
-            direct.mkdirs();
-            Log.d(TAG, "startDownload: inside");
-        }
-
-        // Download File path
-        //requestFilePath = new File(Environment.getExternalStorageDirectory() +FOLDER_NAME+"/"+nameOfFile);
-
-
-        // Download File path
-        //requestFilePath = new File(direct.getAbsoluteFile()+"/"+nameOfFile);
-
         requestFilePath = file;
-
-        Log.d(TAG, "startDownload: "+requestFilePath  );
-        Log.d(TAG, "startDownload: "+requestFilePath.getPath()  );
-        Log.d(TAG, "startDownload: "+requestFilePath.getAbsolutePath()  );
-        Log.d(TAG, "startDownload: "+requestFilePath.exists()  );
-        Log.d(TAG, "startDownload: "+direct.getAbsolutePath()  );
-        Log.d(TAG, "startDownload: "+direct.getAbsolutePath()  );
-        Log.d(TAG, "startDownload: "+direct.exists()  );
 
         if (requestFilePath.getAbsoluteFile().canRead()){
             Toast.makeText(this, "File Already Exist", Toast.LENGTH_SHORT).show();
@@ -118,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
                         .setTitle(nameOfFile)
                         .setDescription(nameOfFile)
                         .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                        /*.setDestinationInExternalPublicDir(direct.getAbsolutePath(), nameOfFile)*/
                         .setDestinationUri(Uri.fromFile(file))
                         .setRequiresCharging(false)
                         .setAllowedOverMetered(true)
@@ -128,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
                         .setTitle(nameOfFile)
                         .setDescription(nameOfFile)
                         .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                        /*.setDestinationInExternalPublicDir(direct.getAbsolutePath(), nameOfFile)*/
                         .setDestinationUri(Uri.fromFile(file))
                         .setAllowedOverMetered(true)
                         .setAllowedOverRoaming(true);
@@ -146,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private BroadcastReceiver downloadReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver downloadReceiver = new BroadcastReceiver() {
         @SuppressLint("SetTextI18n")
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -215,29 +186,3 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, 101);
     }
 }
-
-
-
-
-
-
-
-
-
-/*private void checkUrlForDownload(String downloadUrl)  {
-        try {
-            URL url = new URL(downloadUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            int code = connection.getResponseCode();
-            if (code == 200){
-                //DownloadableFile
-                startDownload(downloadUrl);
-            }else {
-                //Wrong URL
-                Toast.makeText(this, "Please enter valid url", Toast.LENGTH_SHORT).show();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }*/
