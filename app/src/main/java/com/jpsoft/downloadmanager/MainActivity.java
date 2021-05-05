@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private long downloadId;
     File requestFilePath;
 
-    final String FOLDER_NAME = "/MyDarbar Files";
+    final String FOLDER_NAME = "/MyDarbar_Files";
 
     private String url = "";
     @Override
@@ -56,8 +57,8 @@ public class MainActivity extends AppCompatActivity {
 
         binding.button.setOnClickListener(v -> {
             binding.LayoutError.setVisibility(View.GONE);
-            url = binding.editText.getText().toString().trim();
-            if (url.isEmpty()||url == null){
+            url = Objects.requireNonNull(binding.editText.getText()).toString().trim();
+            if (url.isEmpty()){
                 Toast.makeText(this, "Please enter valid url", Toast.LENGTH_SHORT).show();
             }else {
                 requestWritePermission(url);
@@ -71,18 +72,41 @@ public class MainActivity extends AppCompatActivity {
                 MimeTypeMap.getFileExtensionFromUrl(downloadUrl));
 
         // File Path
-        File direct = new File(Environment.getExternalStorageDirectory()
-                + FOLDER_NAME);
+        //File direct = new File(Environment.getExternalStorageDirectory()+ FOLDER_NAME);
+
+        File file = new File(getExternalFilesDir("QuranAudio"),nameOfFile);
+
+        File direct = new File(Environment.DIRECTORY_MUSIC + FOLDER_NAME);
 
         if (!direct.exists()) {
             direct.mkdirs();
+            Log.d(TAG, "startDownload: inside");
         }
 
         // Download File path
-        requestFilePath = new File(Environment.getExternalStorageDirectory()
-                +FOLDER_NAME+"/"+nameOfFile);
+        //requestFilePath = new File(Environment.getExternalStorageDirectory() +FOLDER_NAME+"/"+nameOfFile);
 
-        if (requestFilePath.exists()){
+
+        // Download File path
+        //requestFilePath = new File(direct.getAbsoluteFile()+"/"+nameOfFile);
+
+        requestFilePath = file;
+
+        Log.d(TAG, "startDownload: "+requestFilePath  );
+        Log.d(TAG, "startDownload: "+requestFilePath.getPath()  );
+        Log.d(TAG, "startDownload: "+requestFilePath.getAbsolutePath()  );
+        Log.d(TAG, "startDownload: "+requestFilePath.exists()  );
+        Log.d(TAG, "startDownload: "+direct.getAbsolutePath()  );
+        Log.d(TAG, "startDownload: "+direct.getAbsolutePath()  );
+        Log.d(TAG, "startDownload: "+direct.exists()  );
+
+        if (requestFilePath.getAbsoluteFile().canRead()){
+            Toast.makeText(this, "File Already Exist", Toast.LENGTH_SHORT).show();
+            return;
+        }else if (requestFilePath.isFile()){
+            Toast.makeText(this, "File Already Exist", Toast.LENGTH_SHORT).show();
+            return;
+        }else if (requestFilePath.canRead()){
             Toast.makeText(this, "File Already Exist", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -94,7 +118,8 @@ public class MainActivity extends AppCompatActivity {
                         .setTitle(nameOfFile)
                         .setDescription(nameOfFile)
                         .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                        .setDestinationInExternalPublicDir(FOLDER_NAME, nameOfFile)
+                        /*.setDestinationInExternalPublicDir(direct.getAbsolutePath(), nameOfFile)*/
+                        .setDestinationUri(Uri.fromFile(file))
                         .setRequiresCharging(false)
                         .setAllowedOverMetered(true)
                         .setAllowedOverRoaming(true);
@@ -103,7 +128,8 @@ public class MainActivity extends AppCompatActivity {
                         .setTitle(nameOfFile)
                         .setDescription(nameOfFile)
                         .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                        .setDestinationInExternalPublicDir(FOLDER_NAME, nameOfFile)
+                        /*.setDestinationInExternalPublicDir(direct.getAbsolutePath(), nameOfFile)*/
+                        .setDestinationUri(Uri.fromFile(file))
                         .setAllowedOverMetered(true)
                         .setAllowedOverRoaming(true);
             }
