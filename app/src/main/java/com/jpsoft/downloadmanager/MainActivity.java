@@ -55,8 +55,8 @@ public class MainActivity extends AppCompatActivity {
             if (url.isEmpty()) {
                 Toast.makeText(this, "Please enter valid url", Toast.LENGTH_SHORT).show();
             } else {
-                //requestWritePermission(url);
-                startDownload(url);
+                requestWritePermission(url);
+                //startDownload(url);
             }
         });
     }
@@ -66,7 +66,8 @@ public class MainActivity extends AppCompatActivity {
         String nameOfFile = URLUtil.guessFileName(downloadUrl, null,
                 MimeTypeMap.getFileExtensionFromUrl(downloadUrl));
 
-        File file = new File(getExternalFilesDir("QuranAudio"), nameOfFile);
+//        File file = new File(getExternalFilesDir("QuranAudio"), nameOfFile);
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/QuranAudio/", nameOfFile);
 
         requestFilePath = file;
 
@@ -86,24 +87,15 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             DownloadManager.Request request;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                request = new DownloadManager.Request(Uri.parse(downloadUrl))
-                        .setTitle(nameOfFile)
-                        .setDescription(nameOfFile)
-                        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                        .setDestinationUri(Uri.fromFile(file))
-                        .setRequiresCharging(false)
-                        .setAllowedOverMetered(true)
-                        .setAllowedOverRoaming(true);
-            } else {
-                request = new DownloadManager.Request(Uri.parse(downloadUrl))
-                        .setTitle(nameOfFile)
-                        .setDescription(nameOfFile)
-                        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                        .setDestinationUri(Uri.fromFile(file))
-                        .setAllowedOverMetered(true)
-                        .setAllowedOverRoaming(true);
-            }
+
+            request = new DownloadManager.Request(Uri.parse(downloadUrl))
+                    .setTitle(nameOfFile)
+                    .setDescription(nameOfFile)
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                    .setDestinationUri(Uri.fromFile(file))
+//                    .setDestinationInExternalFilesDir(MainActivity.this,Environment.DIRECTORY_MUSIC,"/QuranAudio/"+nameOfFile)
+                    .setAllowedOverMetered(true)
+                    .setAllowedOverRoaming(true);
 
 
             Context context = this;
@@ -132,14 +124,15 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private void playSura(String path){
+    private void playSura(String path) {
         try {
             mpintro = MediaPlayer.create(MainActivity.this, Uri.parse(path));
             mpintro.setLooping(false);
             mpintro.start();
-        }catch (Exception e){
+        } catch (Exception e) {
+            binding.textViewErrorAlart.setTextColor(getResources().getColor(R.color.red));
             binding.LayoutError.setVisibility(View.VISIBLE);
-            binding.textViewError.setText("Music player exception "+e.getMessage());
+            binding.textViewError.setText("Music player exception " + e.getMessage());
         }
     }
 
@@ -150,10 +143,9 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(downloadReceiver);
     }
 
-/*
     private void requestWritePermission(String downloadUrl) {
         Dexter.withContext(this)
-                .withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE )
+                .withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .withListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted(PermissionGrantedResponse response) {
@@ -196,7 +188,5 @@ public class MainActivity extends AppCompatActivity {
         intent.setData(uri);
         startActivityForResult(intent, 101);
     }
-
- */
 
 }
